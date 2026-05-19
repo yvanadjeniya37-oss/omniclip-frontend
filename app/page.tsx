@@ -55,8 +55,8 @@ export default function App() {
   const [step, setStep] = useState(0);
   const [prog, setProg] = useState(0);
   const [payScreen, setPayScreen] = useState(false);
-  const fileRef = useRef();
-  const logoRef = useRef();
+  const logoRef = useRef<HTMLInputElement>(null);
+  const logoRef = useRef<HTMLInputElement>(null);
   const t = T[lang];
 
   const bg    = dark ? "#0b0b10" : "#f4f4f8";
