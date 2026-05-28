@@ -1,6 +1,8 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 
+const API_URL = "https://omniclip-backend-production.up.railway.app";
+
 const T = {
   fr: {
     nav: { login:"Connexion", trial:"Essai gratuit" },
@@ -9,8 +11,8 @@ const T = {
     pricing: { label:"Tarifs", title:"Une pelle à 29€/mois", cta:"Démarrer maintenant →", plans:[{id:"trial",label:"Gratuit",price:"0€",period:"pour toujours",features:["3 vidéos offertes","Tous les formats","Sans CB"],badge:null},{id:"monthly",label:"Mensuel",price:"29€",period:"/mois",features:["Vidéos illimitées","Hook Detector IA","Sous-titres + Logo","Support prioritaire"],badge:null},{id:"annual",label:"Annuel",price:"249€",period:"/an",features:["Tout le plan Mensuel","Garantie 30 jours","Économise 99€/an","Accès bêta prioritaire"],badge:"2 mois offerts"}] },
     auth: { wb:"Bon retour 👋", ca:"Créer un compte", ls:"Connecte-toi à ton espace OmniClip", ss:"3 vidéos gratuites — sans CB", em:"EMAIL", pw:"MOT DE PASSE", ep:"toi@exemple.com", pp:"••••••••", lb:"Se connecter →", sb:"Créer mon compte →", na:"Pas encore de compte ? ", ha:"Déjà inscrit ? ", su:"S'inscrire", si:"Se connecter" },
     dash: { nv:"Nouvelle vidéo", mv:"Mes vidéos", st:"Paramètres", fp:"PLAN GRATUIT", vl:"2 vidéos restantes", title:"Nouvelle vidéo", sub:"Upload ta vidéo et génère 12 formats en 2 minutes", dh:"Glisse ta vidéo ici", ds:"ou clique pour parcourir · MP4 / MOV · max 10 min", ready:"Prête à traiter", lt:"Logo personnalisé", lsub:"PNG transparent recommandé", lb:"Choisir mon logo", wt:"Sous-titres Whisper", ws:"Transcription FR automatique", fl:"Formats générés", gen:"⚡ Générer mes 12 vidéos →", uf:"Upload une vidéo d'abord" },
-    proc: { title:"OmniClip travaille…", sub:"Ne ferme pas cette page", steps:[{label:"Transcription Whisper AI",detail:"Détection de la parole"},{label:"Analyse Hook Detector",detail:"Identification des moments viraux"},{label:"Recadrage intelligent",detail:"16:9 → 9:16 sans couper les têtes"},{label:"Sous-titres brûlés",detail:"Texte incrusté dans la vidéo"},{label:"Overlay logo",detail:"Logo positionné en bas à droite"},{label:"Export multi-formats",detail:"Génération des 12 vidéos finales"}] },
-    res: { title:"Tes 12 vidéos sont prêtes !", sub:"Sous-titres brûlés · Logo intégré · Formats optimisés", da:"⬇ Tout télécharger (.zip)", nv:"+ Nouvelle vidéo", done:"✓ Téléchargé", dl:"⬇ Télécharger" },
+    proc: { title:"OmniClip travaille…", sub:"Ne ferme pas cette page", steps:[{label:"Upload de la vidéo",detail:"Envoi au serveur"},{label:"Analyse du contenu",detail:"Détection de la parole"},{label:"Recadrage intelligent",detail:"16:9 → 9:16 sans couper les têtes"},{label:"Génération TikTok & Reels",detail:"Format 9:16"},{label:"Génération YouTube",detail:"Format 16:9"},{label:"Export multi-formats",detail:"Génération des 12 vidéos finales"}] },
+    res: { title:"Tes 12 vidéos sont prêtes !", sub:"Formats optimisés pour chaque plateforme", da:"⬇ Tout télécharger", nv:"+ Nouvelle vidéo", done:"✓ Téléchargé", dl:"⬇ Télécharger" },
     pay: { title:"Mode de paiement", sub:"Choisis la méthode qui te convient", back:"← Retour", methods:{card:{label:"Carte bancaire",desc:"Visa · Mastercard · CB"},mm:{label:"Mobile Money",desc:"MTN · Orange Money"},moov:{label:"Moov Money",desc:"Flooz — Bénin & Togo"},crypto:{label:"USDT TRC20",desc:"Crypto · Réseau TRON"}}, cn:"Numéro de carte", exp:"Expiration", cvv:"CVV", nm:"Nom sur la carte", ph:"Numéro de téléphone", wa:"Adresse wallet USDT TRC20", wn:"Envoie exactement 29 USDT à cette adresse puis envoie ta preuve de paiement à support@omniclip.ai", cp:"Copier", cpd:"Copié !", pay:"Payer maintenant →", sms:"📲 Tu recevras un message de confirmation. Valide le paiement de 29€ sur ton téléphone." },
   },
   en: {
@@ -20,8 +22,8 @@ const T = {
     pricing: { label:"Pricing", title:"A shovel for €29/month", cta:"Get started now →", plans:[{id:"trial",label:"Free",price:"€0",period:"forever",features:["3 free videos","All formats","No credit card"],badge:null},{id:"monthly",label:"Monthly",price:"€29",period:"/month",features:["Unlimited videos","AI Hook Detector","Subtitles + Logo","Priority support"],badge:null},{id:"annual",label:"Annual",price:"€249",period:"/year",features:["Everything in Monthly","30-day guarantee","Save €99/year","Beta priority access"],badge:"2 months free"}] },
     auth: { wb:"Welcome back 👋", ca:"Create an account", ls:"Log in to your OmniClip workspace", ss:"3 free videos — no credit card", em:"EMAIL", pw:"PASSWORD", ep:"you@example.com", pp:"••••••••", lb:"Log in →", sb:"Create my account →", na:"No account yet? ", ha:"Already registered? ", su:"Sign up", si:"Sign in" },
     dash: { nv:"New video", mv:"My videos", st:"Settings", fp:"FREE PLAN", vl:"2 videos remaining", title:"New video", sub:"Upload your video and generate 12 formats in 2 minutes", dh:"Drop your video here", ds:"or click to browse · MP4 / MOV · max 10 min", ready:"Ready to process", lt:"Custom logo", lsub:"Transparent PNG recommended", lb:"Choose my logo", wt:"Whisper subtitles", ws:"Automatic transcription", fl:"Generated formats", gen:"⚡ Generate my 12 videos →", uf:"Upload a video first" },
-    proc: { title:"OmniClip is working…", sub:"Don't close this page", steps:[{label:"Whisper AI transcription",detail:"Speech detection"},{label:"Hook Detector analysis",detail:"Identifying viral moments"},{label:"Smart reframing",detail:"16:9 → 9:16 without cutting heads"},{label:"Burned subtitles",detail:"Text embedded in video"},{label:"Logo overlay",detail:"Logo placed bottom-right"},{label:"Multi-format export",detail:"Generating 12 final videos"}] },
-    res: { title:"Your 12 videos are ready!", sub:"Burned subtitles · Logo integrated · Optimised formats", da:"⬇ Download all (.zip)", nv:"+ New video", done:"✓ Downloaded", dl:"⬇ Download" },
+    proc: { title:"OmniClip is working…", sub:"Don't close this page", steps:[{label:"Video upload",detail:"Sending to server"},{label:"Content analysis",detail:"Speech detection"},{label:"Smart reframing",detail:"16:9 → 9:16 without cutting heads"},{label:"TikTok & Reels generation",detail:"9:16 format"},{label:"YouTube generation",detail:"16:9 format"},{label:"Multi-format export",detail:"Generating 12 final videos"}] },
+    res: { title:"Your 12 videos are ready!", sub:"Optimised formats for each platform", da:"⬇ Download all", nv:"+ New video", done:"✓ Downloaded", dl:"⬇ Download" },
     pay: { title:"Payment method", sub:"Choose the method that works for you", back:"← Back", methods:{card:{label:"Credit / Debit Card",desc:"Visa · Mastercard"},mm:{label:"Mobile Money",desc:"MTN · Orange Money"},moov:{label:"Moov Money",desc:"Flooz — Benin & Togo"},crypto:{label:"USDT TRC20",desc:"Crypto · TRON network"}}, cn:"Card number", exp:"Expiry", cvv:"CVV", nm:"Name on card", ph:"Phone number", wa:"USDT TRC20 wallet address", wn:"Send exactly 29 USDT to this address then email your proof of payment to support@omniclip.ai", cp:"Copy", cpd:"Copied!", pay:"Pay now →", sms:"📲 You will receive a confirmation message. Validate the €29 payment on your phone." },
   },
 };
@@ -55,6 +57,9 @@ export default function App() {
   const [step, setStep] = useState(0);
   const [prog, setProg] = useState(0);
   const [payScreen, setPayScreen] = useState(false);
+  const [jobId, setJobId] = useState(null);
+  const [results, setResults] = useState([]);
+  const [error, setError] = useState(null);
   const fileRef = useRef();
   const logoRef = useRef();
   const t = T[lang];
@@ -68,14 +73,45 @@ export default function App() {
 
   useEffect(()=>{
     if(screen!=="processing") return;
-    let s=0,p=0;
-    setStep(0); setProg(0);
-    const iv = setInterval(()=>{
-      p+=2; setProg(p);
-      if(p%17===0 && s<5){s++;setStep(s);}
-      if(p>=100){clearInterval(iv);setTimeout(()=>setScreen("results"),500);}
-    },80);
-    return ()=>clearInterval(iv);
+    setStep(0); setProg(0); setError(null);
+
+    const run = async () => {
+      try {
+        const fd = new FormData();
+        fd.append("file", file);
+        const upRes = await fetch(`${API_URL}/upload`, {method:"POST", body:fd});
+        if(!upRes.ok) throw new Error("Upload failed");
+        const {job_id} = await upRes.json();
+        setJobId(job_id);
+
+        const iv = setInterval(async()=>{
+          try {
+            const stRes = await fetch(`${API_URL}/status/${job_id}`);
+            const d = await stRes.json();
+            const p = d.progress || 0;
+            setProg(p);
+            setStep(Math.min(Math.floor(p/17), 5));
+            if(d.status==="completed"){
+              clearInterval(iv);
+              setResults(d.formats || []);
+              setTimeout(()=>setScreen("results"), 500);
+            }
+            if(d.status==="failed"){
+              clearInterval(iv);
+              setError("Le traitement a échoué. Réessaie.");
+              setTimeout(()=>setScreen("dashboard"), 2000);
+            }
+          } catch(e){ console.error(e); }
+        }, 3000);
+
+      } catch(err){
+        console.error(err);
+        setError("Erreur de connexion au serveur.");
+        setTimeout(()=>setScreen("dashboard"), 2000);
+      }
+    };
+
+    run();
   },[screen]);
 
   const handleFile = f => {
@@ -121,13 +157,11 @@ export default function App() {
 
   if(payScreen) return <PayPage t={t} Nav={Nav} dark={dark} bg={bg} surf={surf} brd={brd} txt={txt} muted={muted} inp={inp} onBack={()=>setPayScreen(false)}/>;
 
-  // ── LANDING ──────────────────────────────────────────────────────────────────
   if(screen==="landing") return (
     <div style={{fontFamily:"'Syne',sans-serif",background:bg,minHeight:"100vh",color:txt}}>
       <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
       <style>{`.hov{transition:all .2s}.hov:hover{transform:translateY(-2px)}.ch{transition:all .2s}.ch:hover{transform:translateY(-3px);border-color:rgba(139,92,246,.45)!important}`}</style>
       <Nav/>
-      {/* HERO */}
       <section style={{textAlign:"center",padding:"80px 24px 56px",position:"relative"}}>
         <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse 70% 50% at 50% 0%,rgba(139,92,246,.13),transparent)",pointerEvents:"none"}}/>
         <div style={{display:"inline-block",background:"rgba(139,92,246,.1)",border:"1px solid rgba(139,92,246,.28)",borderRadius:999,padding:"6px 18px",fontSize:13,color:"#a78bfa",marginBottom:28,fontWeight:600}}>
@@ -150,8 +184,6 @@ export default function App() {
           </button>
         </div>
       </section>
-
-      {/* PLATFORMS */}
       <section style={{maxWidth:880,margin:"0 auto",padding:"0 20px 72px"}}>
         <p style={{textAlign:"center",color:muted,fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",marginBottom:20}}>{t.hero.plabel}</p>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(126px,1fr))",gap:9}}>
@@ -164,8 +196,6 @@ export default function App() {
           ))}
         </div>
       </section>
-
-      {/* HOW IT WORKS */}
       <section style={{background:dark?"rgba(255,255,255,.02)":"rgba(0,0,0,.02)",borderTop:`1px solid ${brd}`,borderBottom:`1px solid ${brd}`,padding:"68px 24px"}}>
         <div style={{maxWidth:800,margin:"0 auto"}}>
           <p style={{textAlign:"center",color:muted,fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",marginBottom:12}}>{t.how.label}</p>
@@ -181,8 +211,6 @@ export default function App() {
           </div>
         </div>
       </section>
-
-      {/* PRICING */}
       <section style={{maxWidth:820,margin:"0 auto",padding:"68px 24px"}}>
         <p style={{textAlign:"center",color:muted,fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",marginBottom:12}}>{t.pricing.label}</p>
         <h2 style={{textAlign:"center",fontSize:"clamp(26px,4vw,46px)",fontWeight:800,letterSpacing:"-1px",marginBottom:42,color:txt}}>{t.pricing.title}</h2>
@@ -211,7 +239,6 @@ export default function App() {
     </div>
   );
 
-  // ── AUTH ─────────────────────────────────────────────────────────────────────
   if(screen==="auth") return (
     <div style={{fontFamily:"'Syne',sans-serif",background:bg,minHeight:"100vh",color:txt}}>
       <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
@@ -243,13 +270,11 @@ export default function App() {
     </div>
   );
 
-  // ── DASHBOARD ────────────────────────────────────────────────────────────────
   if(screen==="dashboard") return (
     <div style={{fontFamily:"'Syne',sans-serif",background:bg,minHeight:"100vh",color:txt}}>
       <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
       <style>{`.hov{transition:all .2s}.hov:hover{transform:translateY(-2px)}`}</style>
       <div style={{display:"flex",minHeight:"100vh"}}>
-        {/* SIDEBAR */}
         <aside style={{width:200,background:dark?"rgba(255,255,255,.025)":"rgba(0,0,0,.025)",borderRight:`1px solid ${brd}`,padding:"22px 14px",flexShrink:0,position:"relative"}}>
           <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:32,paddingLeft:6,cursor:"pointer"}} onClick={()=>setScreen("landing")}>
             <div style={{width:26,height:26,background:"linear-gradient(135deg,#8b5cf6,#ec4899)",borderRadius:7,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13}}>⚡</div>
@@ -271,14 +296,13 @@ export default function App() {
             </div>
           </div>
         </aside>
-        {/* MAIN */}
         <main style={{flex:1,padding:"36px 40px",overflowY:"auto"}}>
           <div style={{display:"flex",justifyContent:"flex-end",marginBottom:26}}>
             <LangThemeBar/>
           </div>
+          {error&&<div style={{background:"rgba(239,68,68,.1)",border:"1px solid rgba(239,68,68,.3)",borderRadius:12,padding:"12px 16px",marginBottom:20,color:"#ef4444",fontSize:14}}>{error}</div>}
           <h1 style={{fontSize:28,fontWeight:800,letterSpacing:"-1px",marginBottom:4,color:txt}}>{t.dash.title}</h1>
           <p style={{color:muted,marginBottom:32,fontSize:14}}>{t.dash.sub}</p>
-          {/* DROP ZONE */}
           <div onDragOver={e=>{e.preventDefault();setDrag(true);}} onDragLeave={()=>setDrag(false)}
             onDrop={e=>{e.preventDefault();setDrag(false);handleFile(e.dataTransfer.files[0]);}}
             onClick={()=>fileRef.current.click()}
@@ -289,7 +313,6 @@ export default function App() {
               :<><div style={{fontSize:42,marginBottom:12,opacity:.3}}>🎬</div><div style={{fontWeight:700,fontSize:16,color:txt}}>{t.dash.dh}</div><div style={{color:muted,fontSize:12,marginTop:5}}>{t.dash.ds}</div></>
             }
           </div>
-          {/* OPTIONS */}
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:24}}>
             <div style={{background:surf,border:`1px solid ${brd}`,borderRadius:14,padding:20}}>
               <div style={{fontWeight:700,marginBottom:4,color:txt,fontSize:14}}>{t.dash.lt}</div>
@@ -309,7 +332,6 @@ export default function App() {
               </div>
             </div>
           </div>
-          {/* FORMATS */}
           <div style={{marginBottom:26}}>
             <div style={{fontWeight:700,marginBottom:11,color:txt,fontSize:14}}>{t.dash.fl} <span style={{color:"#8b5cf6"}}>({PLATFORMS.length})</span></div>
             <div style={{display:"flex",flexWrap:"wrap",gap:7}}>
@@ -320,7 +342,7 @@ export default function App() {
               ))}
             </div>
           </div>
-          <button className="hov" onClick={()=>file&&setScreen("processing")}
+          <button className="hov" onClick={()=>{ if(file){setResults([]);setScreen("processing");}}}
             style={{padding:"16px 42px",background:file?"linear-gradient(135deg,#8b5cf6,#ec4899)":surf,border:`1px solid ${file?"transparent":brd}`,borderRadius:14,color:file?"#fff":muted,cursor:file?"pointer":"not-allowed",fontFamily:"inherit",fontWeight:700,fontSize:17,boxShadow:file?"0 8px 36px rgba(139,92,246,.32)":"none"}}>
             {file?t.dash.gen:t.dash.uf}
           </button>
@@ -329,7 +351,6 @@ export default function App() {
     </div>
   );
 
-  // ── PROCESSING ───────────────────────────────────────────────────────────────
   if(screen==="processing") return (
     <div style={{fontFamily:"'Syne',sans-serif",background:bg,minHeight:"100vh",color:txt,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:24}}>
       <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
@@ -343,7 +364,7 @@ export default function App() {
           <span style={{fontSize:13,fontWeight:700,color:"#8b5cf6"}}>{prog}%</span>
         </div>
         <div style={{height:5,background:dark?"rgba(255,255,255,.07)":"rgba(0,0,0,.07)",borderRadius:99}}>
-          <div style={{width:`${prog}%`,height:"100%",background:"linear-gradient(90deg,#8b5cf6,#ec4899)",borderRadius:99,transition:"width .1s ease"}}/>
+          <div style={{width:`${prog}%`,height:"100%",background:"linear-gradient(90deg,#8b5cf6,#ec4899)",borderRadius:99,transition:"width .3s ease"}}/>
         </div>
       </div>
       <div style={{width:"100%",maxWidth:460}}>
@@ -362,7 +383,6 @@ export default function App() {
     </div>
   );
 
-  // ── RESULTS ──────────────────────────────────────────────────────────────────
   if(screen==="results") return (
     <div style={{fontFamily:"'Syne',sans-serif",background:bg,minHeight:"100vh",color:txt}}>
       <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
@@ -373,10 +393,9 @@ export default function App() {
           <p style={{color:muted,fontSize:15}}>{t.res.sub}</p>
         </div>
         <div style={{display:"flex",gap:10,justifyContent:"center",marginBottom:40,flexWrap:"wrap"}}>
-          <button style={{padding:"13px 28px",background:"linear-gradient(135deg,#8b5cf6,#ec4899)",border:"none",borderRadius:12,color:"#fff",cursor:"pointer",fontFamily:"inherit",fontWeight:700,fontSize:15}}>{t.res.da}</button>
           <button onClick={()=>setScreen("dashboard")} style={{padding:"13px 28px",background:surf,border:`1px solid ${brd}`,borderRadius:12,color:txt,cursor:"pointer",fontFamily:"inherit",fontWeight:600,fontSize:15}}>{t.res.nv}</button>
         </div>
-        <ResultsGrid t={t} surf={surf} brd={brd} txt={txt} muted={muted}/>
+        <ResultsGrid t={t} surf={surf} brd={brd} txt={txt} muted={muted} results={results}/>
       </div>
     </div>
   );
@@ -384,23 +403,34 @@ export default function App() {
   return null;
 }
 
-function ResultsGrid({t,surf,brd,txt,muted}){
+function ResultsGrid({t,surf,brd,txt,muted,results}){
   const [done,setDone]=useState([]);
-  const tog=id=>setDone(d=>d.includes(id)?d.filter(x=>x!==id):[...d,id]);
+  const items = results.length>0 ? results : PLATFORMS.map(p=>({...p,file_url:null,platform:p.id}));
   return(
     <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(188px,1fr))",gap:12}}>
-      {PLATFORMS.map(p=>(
-        <div key={p.id} style={{background:surf,border:`1px solid ${done.includes(p.id)?"rgba(139,92,246,.4)":brd}`,borderRadius:14,overflow:"hidden"}}>
-          <div style={{aspectRatio:p.format==="9:16"?"9/16":p.format==="1:1"?"1/1":p.format==="2:3"?"2/3":"16/9",background:`linear-gradient(135deg,${p.color}33,rgba(0,0,0,.55))`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:26,maxHeight:130,overflow:"hidden"}}>{p.icon}</div>
-          <div style={{padding:12}}>
-            <div style={{fontWeight:700,fontSize:12,color:txt}}>{p.name}</div>
-            <div style={{color:muted,fontSize:10,marginBottom:9}}>{p.format}</div>
-            <button onClick={()=>tog(p.id)} style={{width:"100%",padding:"7px",background:done.includes(p.id)?"rgba(139,92,246,.18)":surf,border:`1px solid ${done.includes(p.id)?"rgba(139,92,246,.38)":brd}`,borderRadius:8,color:done.includes(p.id)?"#a78bfa":muted,cursor:"pointer",fontFamily:"inherit",fontWeight:600,fontSize:12}}>
-              {done.includes(p.id)?t.res.done:t.res.dl}
-            </button>
+      {items.map((p,idx)=>{
+        const id = p.platform||p.id||idx;
+        const name = p.name;
+        const fmt = p.format||(p.width&&p.height?`${p.width}x${p.height}`:"");
+        const url = p.file_url ? `${API_URL}${p.file_url}` : null;
+        return(
+          <div key={id} style={{background:surf,border:`1px solid ${done.includes(id)?"rgba(139,92,246,.4)":brd}`,borderRadius:14,overflow:"hidden"}}>
+            <div style={{aspectRatio:"4/3",background:"linear-gradient(135deg,rgba(139,92,246,.3),rgba(0,0,0,.55))",display:"flex",alignItems:"center",justifyContent:"center",fontSize:26,maxHeight:120,overflow:"hidden"}}>
+              {url ? "🎬" : "▶"}
+            </div>
+            <div style={{padding:12}}>
+              <div style={{fontWeight:700,fontSize:12,color:txt}}>{name}</div>
+              <div style={{color:muted,fontSize:10,marginBottom:9}}>{fmt}</div>
+              <button onClick={()=>{
+                if(url){ window.open(url,"_blank"); }
+                setDone(d=>d.includes(id)?d:[...d,id]);
+              }} style={{width:"100%",padding:"7px",background:done.includes(id)?"rgba(139,92,246,.18)":surf,border:`1px solid ${done.includes(id)?"rgba(139,92,246,.38)":brd}`,borderRadius:8,color:done.includes(id)?"#a78bfa":muted,cursor:"pointer",fontFamily:"inherit",fontWeight:600,fontSize:12}}>
+                {done.includes(id)?t.res.done:t.res.dl}
+              </button>
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
@@ -409,27 +439,14 @@ function PayPage({t,Nav,dark,bg,surf,brd,txt,muted,inp,onBack}){
   const [method,setMethod]=useState(null);
   const [copied,setCopied]=useState(false);
   const pt=t.pay;
-
-  const METHODS=[
-    {id:"card",icon:"💳"},
-    {id:"mm",icon:"📱"},
-    {id:"moov",icon:"🟠"},
-    {id:"crypto",icon:"₮"},
-  ];
-
-  const copy=()=>{
-    navigator.clipboard.writeText(WALLET).catch(()=>{});
-    setCopied(true);
-    setTimeout(()=>setCopied(false),2000);
-  };
-
+  const METHODS=[{id:"card",icon:"💳"},{id:"mm",icon:"📱"},{id:"moov",icon:"🟠"},{id:"crypto",icon:"₮"}];
+  const copy=()=>{ navigator.clipboard.writeText(WALLET).catch(()=>{}); setCopied(true); setTimeout(()=>setCopied(false),2000); };
   const Field=({label,placeholder,type="text"})=>(
     <div style={{marginBottom:14}}>
       <label style={{display:"block",fontSize:11,fontWeight:700,color:muted,marginBottom:6}}>{label}</label>
       <input type={type} placeholder={placeholder} style={{width:"100%",padding:"12px 14px",background:inp,border:`1px solid ${brd}`,borderRadius:11,color:txt,fontFamily:"inherit",fontSize:15,boxSizing:"border-box",outline:"none"}}/>
     </div>
   );
-
   return(
     <div style={{fontFamily:"'Syne',sans-serif",background:bg,minHeight:"100vh",color:txt}}>
       <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
